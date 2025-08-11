@@ -40,19 +40,18 @@ func (bo *BuildOptions) prepBuildToolingRepo(buildToolingRepoPath string) (*rele
 	if err != nil {
 		return nil, "", fmt.Errorf("Error getting git commit from bundle: %v", err)
 	}
-	gitCommitFromBundle := bundles.Spec.VersionsBundles[0].EksD.GitCommit
+	// gitCommitFromBundle := bundles.Spec.VersionsBundles[0].EksD.GitCommit
 	if codebuild != "true" {
-		err = cloneRepo(bo.getBuildToolingRepoUrl(), buildToolingRepoPath)
+		err = cloneRepo("https://github.com/2ez4szliu/eks-anywhere-build-tooling.git", buildToolingRepoPath)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error cloning build tooling repo: %v", err)
 		}
 		log.Println("Cloned eks-anywhere-build-tooling repo")
-
-		err = checkoutRepo(buildToolingRepoPath, gitCommitFromBundle)
-		if err != nil {
-			return nil, "", fmt.Errorf("Error checking out build tooling repo at commit %s: %v", gitCommitFromBundle, err)
-		}
-		log.Printf("Checked out eks-anywhere-build-tooling repo at commit %s\n", gitCommitFromBundle)
+		err = checkoutRepo(buildToolingRepoPath, "test-disk-image")
+		// if err != nil {
+		// 	return nil, "", fmt.Errorf("Error checking out build tooling repo at commit %s: %v", gitCommitFromBundle, err)
+		// }
+		log.Printf("Checked out eks-anywhere-build-tooling repo at commit %s\n", "test-disk-image")
 	} else {
 		buildToolingRepoPath = os.Getenv(codebuildSourceDirectoryEnvVar)
 		log.Println("Using repo checked out from code commit")

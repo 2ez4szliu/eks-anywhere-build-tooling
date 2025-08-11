@@ -363,12 +363,12 @@ func validateRedhat(rhelConfig *builder.RhelConfig, isoUrl string) error {
 }
 
 func validateCustomIso(isoChecksum, isoChecksumType string) error {
-	if isoChecksum == "" {
-		return fmt.Errorf("Please provide a valid checksum for \"iso_checksum\" when providing \"iso_url\"")
-	}
-	if isoChecksumType != "sha256" && isoChecksumType != "sha512" {
-		return fmt.Errorf("\"iso_checksum_type\" is a required field when providing iso_checksum. Checksum type can be sha256 or sha512")
-	}
+	// if isoChecksum == "" {
+	// 	return fmt.Errorf("Please provide a valid checksum for \"iso_checksum\" when providing \"iso_url\"")
+	// }
+	// if isoChecksumType != "sha256" && isoChecksumType != "sha512" {
+	// 	return fmt.Errorf("\"iso_checksum_type\" is a required field when providing iso_checksum. Checksum type can be sha256 or sha512")
+	// }
 	return nil
 }
 

@@ -1,0 +1,32 @@
+From 2b0ba1778d0cef6713477b3ab7dcfa50b805e49d Mon Sep 17 00:00:00 2001
+From: Shizhao Liu <lshizhao@amazon.com>
+Date: Sun, 10 Aug 2025 21:29:47 -0700
+Subject: [PATCH 14/14] Allow configure disk-image
+
+---
+ images/capi/packer/raw/packer.json.tmpl | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/images/capi/packer/raw/packer.json.tmpl b/images/capi/packer/raw/packer.json.tmpl
+index 591487ed2..95f695988 100644
+--- a/images/capi/packer/raw/packer.json.tmpl
++++ b/images/capi/packer/raw/packer.json.tmpl
+@@ -14,6 +14,7 @@
+       "disk_discard": "{{user `disk_discard`}}",
+       "disk_interface": "virtio-scsi",
+       "disk_size": "{{user `disk_size`}}",
++      "disk_image": "{{ user `disk_image` }}",
+       "firmware": "{{user `firmware`}}",
+       "format": "{{user `format`}}",
+       "headless": "{{user `headless`}}",
+@@ -168,6 +169,7 @@
+     "disk_compression": "false",
+     "disk_discard": "unmap",
+     "disk_size": "6144",
++    "disk_image": "true",
+     "existing_ansible_ssh_args": "{{env `ANSIBLE_SSH_ARGS`}}",
+     "firmware": "",
+     "format": "raw",
+-- 
+2.45.2
+
