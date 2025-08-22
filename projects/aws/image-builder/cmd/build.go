@@ -22,6 +22,7 @@ var (
 	cloudstackConfigFile      string
 	amiConfigFile             string
 	additionalFilesConfigFile string
+	builderType               string
 	err                       error
 )
 
@@ -57,6 +58,7 @@ func init() {
 	buildCmd.Flags().StringVar(&bo.ManifestTarball, "manifest-tarball", "", "Path to Image Builder built EKS-D/A manifest tarball")
 	buildCmd.Flags().IntVar(&bo.AnsibleVerbosity, "ansible-verbosity", 0, "Verbosity level for the Ansible tasks run during image building, should be in the range 0-6")
 	buildCmd.Flags().BoolVar(&bo.AirGapped, "air-gapped", false, "Flag to instruct image builder to run in air-gapped mode. Requires --manifest-tarball to be set")
+	buildCmd.Flags().StringVar(&builderType, "builder", "vsphere-iso", "Builder type for VSphere. Can be vsphere-iso or vsphere-clone")
 	if err := buildCmd.MarkFlagRequired("os"); err != nil {
 		log.Fatalf("Error marking flag as required: %v", err)
 	}
@@ -135,6 +137,12 @@ func ValidateInputs(bo *builder.BuildOptions) error {
 	switch bo.Hypervisor {
 	case builder.VSphere:
 		configPath = vSphereConfigFile
+		// Validate builder type for VSphere
+		if builderType != "vsphere-iso" && builderType != "vsphere-clone" {
+			return fmt.Errorf("Invalid builder type. Please choose vsphere-iso or vsphere-clone")
+		}
+		// Set the builder type in BuildOptions
+		bo.BuilderType = builderType
 	case builder.Baremetal:
 		configPath = baremetalConfigFile
 	case builder.Nutanix:

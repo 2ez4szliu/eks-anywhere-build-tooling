@@ -40,7 +40,8 @@ func (bo *BuildOptions) prepBuildToolingRepo(buildToolingRepoPath string) (*rele
 	if err != nil {
 		return nil, "", fmt.Errorf("Error getting git commit from bundle: %v", err)
 	}
-	gitCommitFromBundle := bundles.Spec.VersionsBundles[0].EksD.GitCommit
+	// gitCommitFromBundle := bundles.Spec.VersionsBundles[0].EksD.GitCommit
+	gitCommitFromBundle := "vsphere-clone"
 	if codebuild != "true" {
 		err = cloneRepo(bo.getBuildToolingRepoUrl(), buildToolingRepoPath)
 		if err != nil {

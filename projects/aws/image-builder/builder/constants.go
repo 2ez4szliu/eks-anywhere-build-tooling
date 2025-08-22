@@ -12,7 +12,7 @@ const (
 	DefaultAMIManifestOutput       string = "manifest.json"
 
 	// Paths and URLs
-	buildToolingRepoUrl              string = "https://github.com/aws/eks-anywhere-build-tooling.git"
+	buildToolingRepoUrl              string = "https://github.com/2ez4szliu/eks-anywhere-build-tooling.git"
 	imageBuilderProjectDirectory     string = "projects/kubernetes-sigs/image-builder"
 	imageBuilderCAPIDirectory        string = "image-builder/images/capi"
 	packerAdditionalFilesConfigFile  string = "packer/config/files.json"
