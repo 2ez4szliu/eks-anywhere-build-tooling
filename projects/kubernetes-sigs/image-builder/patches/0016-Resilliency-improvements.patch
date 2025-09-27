@@ -1,0 +1,144 @@
+From 9281a54008d3694afc1877a5234bef5f6a9ea935 Mon Sep 17 00:00:00 2001
+From: Shizhao Liu <lshizhao@amazon.com>
+Date: Mon, 29 Sep 2025 15:17:11 -0700
+Subject: [PATCH 16/16] Increase packer provisioning and SSH default timeout
+
+1. Increase ansible provisioning timeout to 120m
+2. Make ssh_timeout and ssh_handshake_attempts configurable(defaults to 40m and 100)
+
+Signed-off-by: Shizhao Liu <lshizhao@amazon.com>
+---
+ images/capi/ansible/roles/node/tasks/main.yml |  3 +-
+ .../capi/ansible/roles/setup/tasks/redhat.yml |  6 ++--
+ images/capi/packer/ova/packer-node.json       | 28 +++++++++----------
+ 3 files changed, 20 insertions(+), 17 deletions(-)
+
+diff --git a/images/capi/ansible/roles/node/tasks/main.yml b/images/capi/ansible/roles/node/tasks/main.yml
+index bdf0c348b..8b9f7e6f0 100644
+--- a/images/capi/ansible/roles/node/tasks/main.yml
++++ b/images/capi/ansible/roles/node/tasks/main.yml
+@@ -82,7 +82,8 @@
+     name: conntrackd
+     state: stopped
+     enabled: false
+-  when: ansible_os_family not in ["Common Base Linux Mariner", "Debian", "Flatcar", "Microsoft Azure Linux"]
++  when:
++    - ansible_os_family not in ["Common Base Linux Mariner", "Debian", "Flatcar", "Microsoft Azure Linux"]
+ 
+ - name: Ensure auditd is running and comes on at reboot
+   ansible.builtin.service:
+diff --git a/images/capi/ansible/roles/setup/tasks/redhat.yml b/images/capi/ansible/roles/setup/tasks/redhat.yml
+index 2a98dae54..04f064427 100644
+--- a/images/capi/ansible/roles/setup/tasks/redhat.yml
++++ b/images/capi/ansible/roles/setup/tasks/redhat.yml
+@@ -156,11 +156,13 @@
+     name: "iptables"
+     state: present
+     lock_timeout: 60
+-  when: ansible_os_family == "RedHat" and ansible_distribution == "RedHat" and ansible_distribution_major_version == "8"
++  when:
++  - ansible_os_family == "RedHat" and ansible_distribution == "RedHat" and ansible_distribution_major_version == "8"
+ 
+ - name: ensure iptables present for redhat 9
+   yum:
+     name: "iptables-nft"
+     state: present
+     lock_timeout: 60
+-  when: ansible_os_family == "RedHat" and ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"
++  when:
++    - ansible_os_family == "RedHat" and ansible_distribution == "RedHat" and ansible_distribution_major_version == "9"
+diff --git a/images/capi/packer/ova/packer-node.json b/images/capi/packer/ova/packer-node.json
+index 154b929fd..99c6a082f 100644
+--- a/images/capi/packer/ova/packer-node.json
++++ b/images/capi/packer/ova/packer-node.json
+@@ -19,9 +19,9 @@
+       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c 'userdel -f -r {{user `ssh_username`}} && rm -f /etc/sudoers.d/{{user `ssh_username` }} && {{user `shutdown_command`}}'",
+       "skip_compaction": "{{user `skip_compaction`}}",
+       "source_path": "{{ user `source_path`}}",
+-      "ssh_handshake_attempts": "100",
++      "ssh_handshake_attempts": "500",
+       "ssh_password": "{{user `ssh_password`}}",
+-      "ssh_timeout": "40m",
++      "ssh_timeout": "120m",
+       "ssh_username": "{{user `ssh_username`}}",
+       "type": "vmware-vmx",
+       "vm_name": "{{user `build_version`}}",
+@@ -69,9 +69,9 @@
+       "remote_username": "{{user `remote_username`}}",
+       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c '{{user `shutdown_command`}}'",
+       "skip_compaction": "{{user `skip_compaction`}}",
+-      "ssh_handshake_attempts": "100",
++      "ssh_handshake_attempts": "500",
+       "ssh_password": "{{user `ssh_password`}}",
+-      "ssh_timeout": "40m",
++      "ssh_timeout": "120m",
+       "ssh_username": "{{user `ssh_username`}}",
+       "type": "vmware-iso",
+       "version": "{{user `vmx_version`}}",
+@@ -118,9 +118,9 @@
+       "remote_username": "{{user `remote_username`}}",
+       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c 'userdel -f -r {{user `ssh_username`}} && rm -f /etc/sudoers.d/{{user `ssh_username` }} && {{user `shutdown_command`}}'",
+       "skip_compaction": "{{user `skip_compaction`}}",
+-      "ssh_handshake_attempts": "100",
++      "ssh_handshake_attempts": "500",
+       "ssh_password": "{{user `ssh_password`}}",
+-      "ssh_timeout": "40m",
++      "ssh_timeout": "120m",
+       "ssh_username": "{{user `ssh_username`}}",
+       "type": "vmware-iso",
+       "version": "{{user `vmx_version`}}",
+@@ -180,9 +180,9 @@
+       "resource_pool": "{{user `resource_pool`}}",
+       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c '{{user `shutdown_command`}}'",
+       "ssh_clear_authorized_keys": "false",
+-      "ssh_handshake_attempts": "100",
++      "ssh_handshake_attempts": "500",
+       "ssh_password": "{{user `ssh_password`}}",
+-      "ssh_timeout": "40m",
++      "ssh_timeout": "120m",
+       "ssh_username": "{{user `ssh_username`}}",
+       "storage": [
+         {
+@@ -248,8 +248,8 @@
+       "ssh_password": "{{user `ssh_password`}}",
+       "ssh_proxy_host": "{{user `ssh_proxy_host`}}",
+       "ssh_proxy_port": "{{user `ssh_proxy_port`}}",
+-      "ssh_handshake_attempts": "100",
+-      "ssh_timeout": "40m",
++      "ssh_handshake_attempts": "500",
++      "ssh_timeout": "120m",
+       "ssh_username": "{{user `ssh_username`}}",
+       "storage": [
+         {
+@@ -290,8 +290,8 @@
+       "resource_pool": "{{user `resource_pool`}}",
+       "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S -E sh -c 'userdel -f -r {{user `ssh_username`}} && rm -f /etc/sudoers.d/{{user `ssh_username` }} && {{user `shutdown_command`}}'",
+       "ssh_password": "{{user `ssh_password`}}",
+-      "ssh_handshake_attempts": "100",
+-      "ssh_timeout": "40m",
++      "ssh_handshake_attempts": "500",
++      "ssh_timeout": "120m",
+       "ssh_username": "{{user `ssh_username`}}",
+       "template": "{{user `template`}}",
+       "type": "vsphere-clone",
+@@ -393,7 +393,7 @@
+       ],
+       "max_retries": 5,
+       "playbook_file": "./ansible/firstboot.yml",
+-      "timeout": "30m",
++      "timeout": "120m",
+       "type": "ansible",
+       "user": "{{user `ssh_username`}}"
+     },
+@@ -428,7 +428,7 @@
+       ],
+       "max_retries": 5,
+       "playbook_file": "./ansible/node.yml",
+-      "timeout": "5m",
++      "timeout": "10m",
+       "type": "ansible",
+       "user": "{{user `ssh_username`}}"
+     },
+-- 
+2.45.2
+
