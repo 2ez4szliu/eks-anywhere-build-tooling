@@ -1,0 +1,117 @@
+From a6136fc92961173fb972e0d8db0bad528f966d31 Mon Sep 17 00:00:00 2001
+From: Shizhao Liu <lshizhao@amazon.com>
+Date: Fri, 26 Sep 2025 21:34:30 -0700
+Subject: [PATCH 16/16] Resilliency improvements for image-builder workflows
+
+1. Make ansible_firstboot_timeout and ansible_node_timeout configurable
+2. Make ansible_common_ssh_args configurable
+3. Add new flag to skip rhel subscription
+
+Signed-off-by: Shizhao Liu <lshizhao@amazon.com>
+---
+ images/capi/ansible/roles/setup/tasks/redhat.yml | 6 ++++++
+ images/capi/packer/config/ansible-args.json      | 1 -
+ images/capi/packer/ova/packer-node.json          | 8 ++++++--
+ 3 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/images/capi/ansible/roles/setup/tasks/redhat.yml b/images/capi/ansible/roles/setup/tasks/redhat.yml
+index 2a98dae54..8e2374cb0 100644
+--- a/images/capi/ansible/roles/setup/tasks/redhat.yml
++++ b/images/capi/ansible/roles/setup/tasks/redhat.yml
+@@ -24,6 +24,7 @@
+     - lookup('env', 'RHSM_PASS') | length > 0
+     - rhsm_server_hostname == ""
+     - rhsm_server_proxy_hostname == ""
++    - skip_rhel_subscription | default(false) != true
+ 
+ - name: RHEL subscription with proxy
+   redhat_subscription:
+@@ -39,6 +40,7 @@
+     - lookup('env', 'RHSM_PASS') | length > 0
+     - rhsm_server_hostname == ""
+     - rhsm_server_proxy_hostname != ""
++    - skip_rhel_subscription | default(false) != true
+ 
+ - name: Download Katello CA Consumer RPM from Satellite Server
+   get_url:
+@@ -50,6 +52,7 @@
+   when:
+     - ansible_distribution == "RedHat"
+     - rhsm_server_hostname != ""
++    - skip_rhel_subscription | default(false) != true
+ 
+ - name: Install Katello CA Consumer RPM from Satellite Server
+   yum:
+@@ -60,6 +63,7 @@
+   when:
+     - ansible_distribution == "RedHat"
+     - rhsm_server_hostname != ""
++    - skip_rhel_subscription | default(false) != true
+ 
+ - name: RHEL subscription with satellite using activation key
+   redhat_subscription:
+@@ -74,6 +78,7 @@
+     - lookup('env', 'RHSM_ORG_ID') | length > 0
+     - rhsm_server_hostname != ""
+     - rhsm_server_proxy_hostname == ""
++    - skip_rhel_subscription | default(false) != true
+ 
+ - name: RHEL subscription with satellite and proxy
+   redhat_subscription:
+@@ -90,6 +95,7 @@
+     - lookup('env', 'RHSM_ORG_ID') | length > 0
+     - rhsm_server_hostname != ""
+     - rhsm_server_proxy_hostname != ""
++    - skip_rhel_subscription | default(false) != true
+ 
+ - name: Perform dnf clean
+   ansible.builtin.command: /usr/bin/yum -y clean all
+diff --git a/images/capi/packer/config/ansible-args.json b/images/capi/packer/config/ansible-args.json
+index b5b5a0112..906a93ff3 100644
+--- a/images/capi/packer/config/ansible-args.json
++++ b/images/capi/packer/config/ansible-args.json
+@@ -1,5 +1,4 @@
+ {
+-  "ansible_common_ssh_args": "-o IdentitiesOnly=yes",
+   "ansible_common_vars": "containerd_url={{user `containerd_url`}} containerd_sha256={{user `containerd_sha256`}} pause_image={{user `pause_image`}} containerd_additional_settings={{user `containerd_additional_settings`}} containerd_cri_socket={{user `containerd_cri_socket`}} containerd_version={{user `containerd_version`}} containerd_wasm_shims_url={{user `containerd_wasm_shims_url`}} containerd_wasm_shims_version={{user `containerd_wasm_shims_version`}} containerd_wasm_shims_sha256={{user `containerd_wasm_shims_sha256`}} containerd_wasm_shims_runtimes=\"{{user `containerd_wasm_shims_runtimes`}}\" containerd_wasm_shims_runtime_versions=\"{{user `containerd_wasm_shims_runtime_versions`}}\" crictl_url={{user `crictl_url`}} crictl_sha256={{user `crictl_sha256`}} crictl_source_type={{user `crictl_source_type`}} custom_role_names=\"{{user `custom_role_names`}}\" firstboot_custom_roles_pre=\"{{user `firstboot_custom_roles_pre`}}\" firstboot_custom_roles_post=\"{{user `firstboot_custom_roles_post`}}\" node_custom_roles_pre=\"{{user `node_custom_roles_pre`}}\" node_custom_roles_post=\"{{user `node_custom_roles_post`}}\" node_custom_roles_post_sysprep=\"{{user `node_custom_roles_post_sysprep`}}\" disable_public_repos={{user `disable_public_repos`}} extra_debs=\"{{user `extra_debs`}}\" extra_repos=\"{{user `extra_repos`}}\" extra_rpms=\"{{user `extra_rpms`}}\" http_proxy={{user `http_proxy`}} https_proxy={{user `https_proxy`}} kubeadm_template={{user `kubeadm_template`}} kubernetes_apiserver_port={{user `kubernetes_apiserver_port`}} kubernetes_cni_http_source={{user `kubernetes_cni_http_source`}} kubernetes_cni_http_checksum={{user `kubernetes_cni_http_checksum`}} kubernetes_goarch={{user `kubernetes_goarch`}} kubernetes_http_source={{user `kubernetes_http_source`}} kubernetes_container_registry={{user `kubernetes_container_registry`}} kubernetes_rpm_repo={{user `kubernetes_rpm_repo`}} kubernetes_rpm_gpg_key={{user `kubernetes_rpm_gpg_key`}} kubernetes_rpm_gpg_check={{user `kubernetes_rpm_gpg_check`}} kubernetes_deb_repo={{user `kubernetes_deb_repo`}} kubernetes_deb_gpg_key={{user `kubernetes_deb_gpg_key`}} kubernetes_cni_deb_version={{user `kubernetes_cni_deb_version`}} kubernetes_cni_rpm_version={{user `kubernetes_cni_rpm_version`}} kubernetes_cni_semver={{user `kubernetes_cni_semver`}} kubernetes_cni_source_type={{user `kubernetes_cni_source_type`}} kubernetes_semver={{user `kubernetes_semver`}} kubernetes_source_type={{user `kubernetes_source_type`}} kubernetes_load_additional_imgs={{user `kubernetes_load_additional_imgs`}} kubernetes_deb_version={{user `kubernetes_deb_version`}} kubernetes_rpm_version={{user `kubernetes_rpm_version`}} no_proxy={{user `no_proxy`}} pip_conf_file={{user `pip_conf_file`}} python_path={{user `python_path`}} redhat_epel_rpm={{user `redhat_epel_rpm`}} epel_rpm_gpg_key={{user `epel_rpm_gpg_key`}} reenable_public_repos={{user `reenable_public_repos`}} remove_extra_repos={{user `remove_extra_repos`}} systemd_prefix={{user `systemd_prefix`}} sysusr_prefix={{user `sysusr_prefix`}} sysusrlocal_prefix={{user `sysusrlocal_prefix`}} load_additional_components={{ user `load_additional_components`}} additional_registry_images={{ user `additional_registry_images`}} additional_registry_images_list={{ user `additional_registry_images_list`}} ecr_credential_provider={{ user `ecr_credential_provider` }} additional_url_images={{ user `additional_url_images`}} additional_url_images_list={{ user `additional_url_images_list`}} additional_executables={{ user `additional_executables`}} additional_executables_list={{ user `additional_executables_list`}} additional_executables_destination_path={{ user `additional_executables_destination_path`}} additional_s3={{ user `additional_s3`}} build_target={{ user `build_target`}} amazon_ssm_agent_rpm={{ user `amazon_ssm_agent_rpm` }} enable_containerd_audit={{ user `enable_containerd_audit` }} kubernetes_enable_automatic_resource_sizing={{ user `kubernetes_enable_automatic_resource_sizing` }} debug_tools={{user `debug_tools`}} ubuntu_repo={{user `ubuntu_repo`}} ubuntu_security_repo={{user `ubuntu_security_repo`}} gpu_block_nouveau_loading={{user `block_nouveau_loading`}} netplan_removal_excludes=\"{{user `netplan_removal_excludes`}}\" etcd_http_source={{user `etcd_http_source`}} etcd_version={{user `etcd_version`}} etcdadm_http_source={{user `etcdadm_http_source`}} etcd_sha256={{user `etcd_sha256`}} etcdadm_version={{user `etcdadm_version`}} rhsm_server_hostname={{ user `rhsm_server_hostname` }} rhsm_server_release_version={{ user `rhsm_server_release_version` }} rhsm_server_proxy_hostname={{ user `rhsm_server_proxy_hostname` }} rhsm_server_proxy_port={{ user `rhsm_server_proxy_port` }}",
+   "ansible_scp_extra_args": "{{env `ANSIBLE_SCP_EXTRA_ARGS`}}"
+ }
+diff --git a/images/capi/packer/ova/packer-node.json b/images/capi/packer/ova/packer-node.json
+index 154b929fd..5086025c7 100644
+--- a/images/capi/packer/ova/packer-node.json
++++ b/images/capi/packer/ova/packer-node.json
+@@ -393,7 +393,7 @@
+       ],
+       "max_retries": 5,
+       "playbook_file": "./ansible/firstboot.yml",
+-      "timeout": "30m",
++      "timeout": "{{user `ansible_firstboot_timeout`}}",
+       "type": "ansible",
+       "user": "{{user `ssh_username`}}"
+     },
+@@ -428,7 +428,7 @@
+       ],
+       "max_retries": 5,
+       "playbook_file": "./ansible/node.yml",
+-      "timeout": "5m",
++      "timeout": "{{user `ansible_node_timeout`}}",
+       "type": "ansible",
+       "user": "{{user `ssh_username`}}"
+     },
+@@ -480,9 +480,13 @@
+   ],
+   "variables": {
+     "ansible_common_vars": "",
++    "ansible_common_ssh_args": "-o IdentitiesOnly=yes",
+     "ansible_extra_vars": "guestinfo_datasource_slug={{user `guestinfo_datasource_slug`}} guestinfo_datasource_ref={{user `guestinfo_datasource_ref`}} guestinfo_datasource_script={{user `guestinfo_datasource_script`}}",
+     "ansible_scp_extra_args": "",
+     "ansible_user_vars": "",
++    "ansible_firstboot_timeout": "30m",
++    "ansible_node_timeout": "5m",
++    "skip_rhel_subscription": "false",
+     "base_build_version": "base-{{user `build_name`}}",
+     "base_output_dir": "./output/{{user `base_build_version`}}",
+     "block_nouveau_loading": "true",
+-- 
+2.49.0
+

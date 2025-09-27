@@ -176,6 +176,7 @@ type RhsmConfig struct {
 	ServerReleaseVersion string `json:"rhsm_server_release_version,omitempty"`
 	ActivationKey        string `json:"rhsm_activation_key,omitempty"`
 	OrgId                string `json:"rhsm_org_id,omitempty"`
+	SkipRhelSubscription string `json:"skip_rhel_subscription,omitempty"`
 }
 
 type ExtraOverridesConfig struct {
@@ -185,6 +186,9 @@ type ExtraOverridesConfig struct {
 	NodeCustomRolesPost      string `json:"node_custom_roles_post,omitempty"`
 	DisablePublicRepos       string `json:"disable_public_repos,omitempty"`
 	ReenablePublicRepos      string `json:"reenable_public_repos,omitempty"`
+	AnsibleFirstBootTimeout  string `json:"ansible_firstboot_timeout,omitempty"`
+	AnsibleNodeTimeout       string `json:"ansible_node_timeout,omitempty"`
+	AnsibleCommonSshArgs     string `json:"ansible_common_ssh_args,omitempty"`
 }
 
 type AirGappedConfig struct {
